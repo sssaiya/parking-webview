@@ -15,6 +15,24 @@ const spot_type_data = JSON.parse(fs.readFileSync("spot_types.json")).spots;
 
 app.set("view engine", "ejs");
 
+// var htmlContent = fs.readFileSync(__dirname + "/views/parking.ejs", "utf8");
+
+// var htmlRenderized = ejs.render(htmlContent, {
+//   filename: "parking.ejs",
+//   lotName: lotName,
+//   lotContext: lotContext,
+//   totalSpaces: totalSpacesForThisSelection,
+//   userSpotData: userSpotData,
+//   isHistoric: isHistoric,
+//   numSpotsSelected: numSpotsSelected,
+// });
+
+function renderEjs(req,res){
+  console.log(req);
+}
+
+// console.log(htmlRenderized);
+
 // Automatically allow cross-origin requests
 // app.use(cors({ origin: true }));
 // https://cqeg04fl07.execute-api.us-west-2.amazonaws.com/parking?lot=P406&spots=A,B,S
@@ -134,4 +152,5 @@ function makeSpotData(selected, availability) {
   return thisSpotData;
 }
 // module.exports.handler = serverless(app);
-exports.app = functions.https.onRequest(app);
+// exports.app = functions.https.onRequest(app);
+module.exports.handler = renderEjs();
