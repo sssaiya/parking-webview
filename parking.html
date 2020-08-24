@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parking Card</title>
+    <script src="ejs.min.js"></script>
+</head>
+
+<body>
+    <script>
+        let spot_type_data = {
+            "spots": [
+                {
+                    "key": "S",
+                    "name": "Student",
+                    "color": "F9F705",
+                    "text": "S",
+                    "text_color": "000000"
+                },
+                {
+                    "key": "B",
+                    "name": "Staff/Graduate Students",
+                    "color": "3EBC03",
+                    "text": "B",
+                    "text_color": "FDFFFD"
+                },
+                {
+                    "key": "A",
+                    "name": "Faculty and Senior Staff",
+                    "color": "EF0707",
+                    "text": "A",
+                    "text_color": "FDFFFD"
+                },
+                {
+                    "key": "Accessible",
+                    "name": "Accessible",
+                    "color": "073FCF",
+                    "text": "&#x267f;",
+                    "text_color": "FFFFFF"
+                },
+                {
+                    "key": "V",
+                    "name": "Visitor",
+                    "color": "1E2128",
+                    "text": "V",
+                    "text_color": "FDFFFD"
+                },
+                {
+                    "key": "SR",
+                    "name": "Residential Students",
+                    "color": "070708",
+                    "text": "SR",
+                    "text_color": "F9F705"
+                },
+                {
+                    "key": "D",
+                    "name": "Discount",
+                    "color": "1DDDDA",
+                    "text": "D",
+                    "text_color": "000000"
+                },
+                {
+                    "key": "M",
+                    "name": "Motorcycle",
+                    "color": "F99405",
+                    "text": "M",
+                    "text_color": "000000"
+                }
+            ]
+        };
+
+        (function () {
+            var urlParams = new URLSearchParams(window.location.search)
+            var lotID = urlParams.get('lot');
+
+            const url =
+                "https://4pefyt8qv7.execute-api.us-west-2.amazonaws.com/dev/parking/v1.1/status/" +
+                lotID;
+
+            var xmlhttp = new XMLHttpRequest();
+            var contentType = "application/json; charset=utf-8";
+
+            xmlhttp.onreadystatechange = function () {
+                var lotInfo = xmlhttp.response;
+                const availability = lotInfo["Availability"];
+                const lotName = lotInfo["LocationName"];
+                const lotContext = lotInfo["LocationContext"];
+
+                //Helps to add special message warning data is not live.
+                var isHistoric;
+                lotInfo["LocationProvider"] == "Historic"
+                    ? (isHistoric = true)
+                    : (isHistoric = false);
+
+                var totalSpacesForThisSelection = 0;
+                var numSpotsSelected = 0;
+
+                // Get data (text and color) for spot types from query string
+                var userSpotData = {};
+                let str = urlParams.get('spots');
+                const selectedSpotsFromQuery = str.split(",");
+                for (var i = 0; i <= 2; i++) {
+                    const selected = selectedSpotsFromQuery[i];
+                    if (selected) {
+                        const thisSpotData = makeSpotData(selected, availability);
+                        userSpotData[selected] = thisSpotData;
+                        totalSpacesForThisSelection += thisSpotData["total"];
+                        numSpotsSelected++;
+                    }
+                }
+
+                let html = ejs.compile("parking", {
+                    lotName: lotName,
+                    lotContext: lotContext,
+                    totalSpaces: totalSpacesForThisSelection,
+                    userSpotData: userSpotData,
+                    isHistoric: isHistoric,
+                    numSpotsSelected: numSpotsSelected,
+                });
+            };
+            xmlhttp.open("GET", url, true);
+            xmlhttp.setRequestHeader('Content-type', contentType)
+            xmlhttp.setRequestHeader("Access-Control-Allow-Origin", "*");
+            xmlhttp.send();
+
+        })();
+
+        //Gets color, key
+        function getSpotTypeDataFromContext(spotType) {
+            for (var i = 0; i < spot_type_data.length; i++) {
+                if (spot_type_data[i].key == spotType) {
+                    return [
+                        spot_type_data[i].text,
+                        spot_type_data[i].color,
+                        spot_type_data[i].text_color,
+                    ];
+                }
+            }
+        }
+
+        function makeSpotData(selected, availability) {
+            const spotTypeData = getSpotTypeDataFromContext(selected);
+            var thisSpotData = {};
+            thisSpotData["text"] = spotTypeData[0];
+            thisSpotData["color"] = "#" + spotTypeData[1];
+            thisSpotData["textColor"] = "#" + spotTypeData[2];
+            thisSpotData["total"] = availability[selected]
+                ? availability[selected]["Total"]
+                : 0;
+
+            thisSpotData["open"] = availability[selected]
+                ? availability[selected]["Open"]
+                : 0;
+
+            if (thisSpotData["total"] == 0) {
+                thisSpotData["percent"] = 0;
+                thisSpotData["percentText"] = "N/A";
+            } else {
+                thisSpotData["percent"] = Math.floor(
+                    100 *
+                    ((thisSpotData["total"] - thisSpotData["open"]) / thisSpotData["total"])
+                );
+                thisSpotData["percentText"] = thisSpotData["percent"].toString() + "%";
+            }
+
+            const percent = thisSpotData["percent"];
+
+            if (percent == 0) {
+                thisSpotData["percentColor"] = "#F0EFF4";
+            } else if (percent < 30) {
+                thisSpotData["percentColor"] = "#EB5757";
+            } else if (percent < 60) {
+                thisSpotData["percentColor"] = "#F2C94C";
+            } else {
+                thisSpotData["percentColor"] = "#27AE60";
+            }
+            return thisSpotData;
+        }
+    </script>
+
+</body>
+
+</html>
