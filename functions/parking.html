@@ -80,7 +80,7 @@
                 lotID;
 
             var xmlhttp = new XMLHttpRequest();
-            xmlhttp.overrideMimeType('text/xml');
+            var contentType = "application/json; charset=utf-8";
 
             xmlhttp.onreadystatechange = function () {
                 var lotInfo = xmlhttp.response;
@@ -121,6 +121,7 @@
                 });
             };
             xmlhttp.open("GET", url, true);
+            xmlhttp.setRequestHeader('Content-type', contentType)
             xmlhttp.setRequestHeader("Access-Control-Allow-Origin", "*");
             xmlhttp.send();
 
