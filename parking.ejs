@@ -11,6 +11,7 @@
         :root {
             --PI: 3.1415926535;
             --r: 10vw;
+            --numSpots: 0;
         }
 
         #lot_name {
@@ -37,7 +38,7 @@
         .column {
             border-color: black;
             float: left;
-            width: calc(100% / <%=numSpotsSelected %>);
+            width: calc(100% / var(--numSpots));
         }
 
         /* Clear floats after the columns */
@@ -133,9 +134,6 @@
 
 <body>
     <div id="parking_card">
-
-
-        <% if(typeof(lotName) != "undefined") {%>
         <h1 id="lot_name">
             <center><%= lotName %></center>
         </h1>

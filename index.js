@@ -1,70 +1,94 @@
-const serverless = require("serverless-http");
-const express = require("express");
-var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-const app = express();
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-const functions = require("firebase-functions");
-const Entities = require("html-entities").XmlEntities;
+const spot_type_data = [
+  {
+    key: "S",
+    name: "Student",
+    color: "F9F705",
+    text: "S",
+    text_color: "000000",
+  },
+  {
+    key: "B",
+    name: "Staff/Graduate Students",
+    color: "3EBC03",
+    text: "B",
+    text_color: "FDFFFD",
+  },
+  {
+    key: "A",
+    name: "Faculty and Senior Staff",
+    color: "EF0707",
+    text: "A",
+    text_color: "FDFFFD",
+  },
+  {
+    key: "Accessible",
+    name: "Accessible",
+    color: "073FCF",
+    text: "&#x267f;",
+    text_color: "FFFFFF",
+  },
+  {
+    key: "V",
+    name: "Visitor",
+    color: "1E2128",
+    text: "V",
+    text_color: "FDFFFD",
+  },
+  {
+    key: "SR",
+    name: "Residential Students",
+    color: "070708",
+    text: "SR",
+    text_color: "F9F705",
+  },
+  {
+    key: "D",
+    name: "Discount",
+    color: "1DDDDA",
+    text: "D",
+    text_color: "000000",
+  },
+  {
+    key: "M",
+    name: "Motorcycle",
+    color: "F99405",
+    text: "M",
+    text_color: "000000",
+  },
+];
 
-const entities = new Entities();
+var urlParams = new URLSearchParams(window.location.search);
+var lotID = urlParams.get("lot");
 
-var fs = require("fs");
+const url =
+  "https://4pefyt8qv7.execute-api.us-west-2.amazonaws.com/dev/parking/v1.1/status/" +
+  lotID;
 
-const spot_type_data = JSON.parse(fs.readFileSync("spot_types.json")).spots;
+var xmlhttp = new XMLHttpRequest();
+var contentType = "application/json; charset=utf-8";
 
-app.set("view engine", "ejs");
+xmlhttp.onreadystatechange = function () {
+  //Needed as readyStateChange event is called multiple times, 4 means its completed and response is downloaded
+  if (this.readyState != 4) return;
+  var lotInfo = JSON.parse(xmlhttp.responseText);
+  const availability = lotInfo["Availability"];
+  const lotName = lotInfo["LocationName"];
+  const lotContext = lotInfo["LocationContext"];
 
-// var htmlContent = fs.readFileSync(__dirname + "/views/parking.ejs", "utf8");
+  //Helps to add special message warning data is not live.
+  var isHistoric;
+  lotInfo["LocationProvider"] == "Historic"
+    ? (isHistoric = true)
+    : (isHistoric = false);
 
-// var htmlRenderized = ejs.render(htmlContent, {
-//   filename: "parking.ejs",
-//   lotName: lotName,
-//   lotContext: lotContext,
-//   totalSpaces: totalSpacesForThisSelection,
-//   userSpotData: userSpotData,
-//   isHistoric: isHistoric,
-//   numSpotsSelected: numSpotsSelected,
-// });
+  var totalSpacesForThisSelection = 0;
+  var numSpotsSelected = 0;
 
-function renderEjs(req,res){
-  console.log(req);
-}
-
-// console.log(htmlRenderized);
-
-// Automatically allow cross-origin requests
-// app.use(cors({ origin: true }));
-// https://cqeg04fl07.execute-api.us-west-2.amazonaws.com/parking?lot=P406&spots=A,B,S
-// http://localhost:5000/parking?lot=P406&spots=A,B,S
-app.get("/parking", function (req, res) {
-  if (!req.query.lot) {
-    res.render("parking");
-  }
-  let lotID = req.query.lot;
-  const url =
-    "https://4pefyt8qv7.execute-api.us-west-2.amazonaws.com/dev/parking/v1.1/status/" +
-    lotID;
-  var client = new HttpClient();
-  client.get(url, (response) => {
-    var lotInfo = JSON.parse(response);
-    const availability = lotInfo["Availability"];
-    const lotName = lotInfo["LocationName"];
-    const lotContext = lotInfo["LocationContext"];
-
-    //Helps to add special message warning data is not live.
-    var isHistoric;
-    lotInfo["LocationProvider"] == "Historic"
-      ? (isHistoric = true)
-      : (isHistoric = false);
-
-    var totalSpacesForThisSelection = 0;
-    var numSpotsSelected = 0;
-
-    // Get data (text and color) for spot types from query string
-    var userSpotData = {};
-    let str = req.query.spots ? req.query.spots : "";
-    const selectedSpotsFromQuery = str.split(",");
+  // Get data (text and color) for spot types from query string
+  var userSpotData = {};
+  let spotsStr = urlParams.get("spots");
+  if (spotsStr) {
+    const selectedSpotsFromQuery = spotsStr.split(",");
     for (var i = 0; i <= 2; i++) {
       const selected = selectedSpotsFromQuery[i];
       if (selected) {
@@ -74,31 +98,59 @@ app.get("/parking", function (req, res) {
         numSpotsSelected++;
       }
     }
+  }
 
-    res.render("parking", {
-      lotName: lotName,
-      lotContext: lotContext,
-      totalSpaces: totalSpacesForThisSelection,
-      userSpotData: userSpotData,
-      isHistoric: isHistoric,
-      numSpotsSelected: numSpotsSelected,
+  document.documentElement.style.setProperty[("--numSpots", numSpotsSelected)];
+
+  document.getElementById("lot_name").innerHTML = lotName;
+  document.getElementById("lot_context").innerHTML = lotContext;
+  document.getElementById(
+    "total_spots"
+  ).innerHTML = `~ ${totalSpacesForThisSelection} Spots Available`;
+
+  if (isHistoric) {
+    document.getElementById("is_historic").innerHTML =
+      "⚠ No Live Data. Estimated availability shown.";
+  } else {
+    document.getElementById("is_historic").innerHTML = "&nbsp;";
+  }
+
+  if (numSpotsSelected <= 0) {
+    document.getElementById("spots_row").innerHTML = "No Spot Types Provided";
+  } else {
+    var row = document.getElementById("spots_row");
+    var i = 0;
+    var temp = document.getElementsByTagName("template")[0];
+    Object.keys(userSpotData).forEach((key) => {
+      let spotData = userSpotData[key];
+
+      var clone = temp.content.cloneNode(true);
+      let col = clone.childNodes[1];
+      let progressDiv = col.childNodes[3];
+      progressDiv.setAttribute("data-percent", spotData["percent"]);
+      progressDiv.setAttribute("data-text", spotData["percentText"]);
+      progressDiv.setAttribute("data-color", spotData["percentColor"]);
+
+      progressDiv.style.setProperty("color", spotData["percentColor"]);
+
+      let progressSVG = progressDiv.childNodes[1];
+      progressSVG.style.setProperty("stroke", spotData["percentColor"]);
+
+      let spotIconSpan = col.childNodes[5].childNodes[1];
+      spotIconSpan.style.setProperty("background-color", spotData["color"]);
+
+      let spotIconInnerText = spotIconSpan.childNodes[1];
+      spotIconInnerText.style.setProperty("color", spotData["textColor"]); //only need one probably
+      spotIconInnerText.innerHTML = spotData["text"];
+
+      row.appendChild(clone);
     });
-  });
-});
-
-// Resusable code to make an XML HTTP request
-var HttpClient = function () {
-  this.get = function (aUrl, aCallback) {
-    var anHttpRequest = new XMLHttpRequest();
-    anHttpRequest.onreadystatechange = function () {
-      if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
-        aCallback(anHttpRequest.responseText);
-    };
-
-    anHttpRequest.open("GET", aUrl, true);
-    anHttpRequest.send(null);
-  };
+  }
 };
+
+xmlhttp.open("GET", url, true);
+xmlhttp.setRequestHeader("Content-type", contentType);
+xmlhttp.send();
 
 //Gets color, key
 function getSpotTypeDataFromContext(spotType) {
@@ -116,7 +168,7 @@ function getSpotTypeDataFromContext(spotType) {
 function makeSpotData(selected, availability) {
   const spotTypeData = getSpotTypeDataFromContext(selected);
   var thisSpotData = {};
-  thisSpotData["text"] = entities.decode(spotTypeData[0]);
+  thisSpotData["text"] = spotTypeData[0];
   thisSpotData["color"] = "#" + spotTypeData[1];
   thisSpotData["textColor"] = "#" + spotTypeData[2];
   thisSpotData["total"] = availability[selected]
@@ -151,6 +203,3 @@ function makeSpotData(selected, availability) {
   }
   return thisSpotData;
 }
-// module.exports.handler = serverless(app);
-// exports.app = functions.https.onRequest(app);
-module.exports.handler = renderEjs();

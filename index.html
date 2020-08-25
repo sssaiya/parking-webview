@@ -1,16 +1,17 @@
-<!-- views/parking.ejs -->
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- <link href="parking.css" rel="stylesheet" type="text/css" /> -->
     <title>Parking Card</title>
+    <script src="index.js"></script>
+
     <style>
         :root {
             --PI: 3.1415926535;
             --r: 10vw;
+            --numSpots: 0;
         }
 
         #lot_name {
@@ -37,7 +38,7 @@
         .column {
             border-color: black;
             float: left;
-            width: calc(100% / <%=numSpotsSelected %>);
+            width: calc(100% / var(--numSpots));
         }
 
         /* Clear floats after the columns */
@@ -107,6 +108,7 @@
             font-size: 4vw;
         }
     </style>
+
     <script>
         // Adds color and stroke to radial progress circle
         (function () {
@@ -133,41 +135,48 @@
 
 <body>
     <div id="parking_card">
-
-
-        <% if(typeof(lotName) != "undefined") {%>
-        <h1 id="lot_name">
-            <center><%= lotName %></center>
-        </h1>
         <center>
-            <p id="lot_context"><%= lotContext %></p>
+            <h1 id="lot_name">
+            </h1>
+        </center>
+        <center>
+            <p id="lot_context"></p>
         </center>
         <center>
             <b>
-                <p id="total_spots">~<%= totalSpaces %> Spots Available</p>
+                <p id="total_spots"></p>
             </b>
         </center>
-        <p id="is_historic">
-            <% if(isHistoric ) {%>
-            <center>
-                <b>⚠ No Live Data. Estimated availability shown. </b>
-            </center>
-            <% } else { %>
-            <b>&nbsp;</b>
-            <% } %>
-        </p>
+        <center>
+            <b>
+                <p id="is_historic"></p>
+            </b>
+        </center>
 
-        <% if(typeof(userSpotData) != "undefined") {%>
-        <div class="row">
-            <% Object.keys(userSpotData).forEach(key => { %>
-            <%- include('parkingComponent', {spotData: userSpotData[key], spotId: key}) %>
-            <% }); %>
-        </div>
-        <%} else {%>
-        <center>No Spot Types Provided</center>
-        <%}%>
-    <%}%>
+        <center>
+            <table>
+                <tr id="spots_row">
+                    <template>
+                        <div class="column">
+                            <br>
+                            <div class="progressdiv">
+                                <svg class="progress" xmlns="http://www.w3.org/2000/svg">
+                                    <circle></circle>
+                                    <circle class="bar"></circle>
+                                </svg>
+                            </div>
+                            <center>
+                                <span class="spotIdCommonClass">
+                                    <p id="inner_text"></p>
+                                </span>
+                            </center>
+                        </div>
+                    </template>
+                </tr>
+            </table>
+        </center>
     </div>
 </body>
+
 
 </html>
