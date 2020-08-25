@@ -126,6 +126,10 @@ xmlhttp.onreadystatechange = function () {
 
       var clone = temp.content.cloneNode(true);
       let col = clone.childNodes[1];
+      let width = Math.floor(100 / numSpotsSelected);
+      console.log(width);
+      col.style.setProperty("width", width);
+
       let progressDiv = col.childNodes[3];
       progressDiv.setAttribute("data-percent", spotData["percent"]);
       progressDiv.setAttribute("data-text", spotData["percentText"]);
