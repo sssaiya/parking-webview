@@ -146,7 +146,28 @@ xmlhttp.onreadystatechange = function () {
       row.appendChild(clone);
     });
   }
+
+  fillProgressBar();
 };
+
+function fillProgressBar() {
+  var totalProgress, progress;
+  const circles = document.querySelectorAll(".progress");
+  for (var i = 0; i < circles.length; i++) {
+    var style = getComputedStyle(circles[i].querySelector("circle"));
+    //Gets circumference of each circle
+    totalProgress = parseInt(style.getPropertyValue("stroke-dasharray"));
+    progress = parseInt(circles[i].parentElement.getAttribute("data-percent"));
+
+    if (progress == "NA") {
+      //If NA means no spots of this type
+      circles[i].querySelector(".bar").style["stroke-dashoffset"] = 0;
+    } else {
+      circles[i].querySelector(".bar").style["stroke-dashoffset"] =
+        (totalProgress * progress) / 100;
+    }
+  }
+}
 
 xmlhttp.open("GET", url, true);
 xmlhttp.setRequestHeader("Content-type", contentType);
@@ -183,10 +204,13 @@ function makeSpotData(selected, availability) {
     thisSpotData["percent"] = 0;
     thisSpotData["percentText"] = "N/A";
   } else {
-    thisSpotData["percent"] = Math.floor(
-      100 *
-        ((thisSpotData["total"] - thisSpotData["open"]) / thisSpotData["total"])
-    );
+    thisSpotData["percent"] =
+      100 -
+      Math.floor(
+        100 *
+          ((thisSpotData["total"] - thisSpotData["open"]) /
+            thisSpotData["total"])
+      );
     thisSpotData["percentText"] = thisSpotData["percent"].toString() + "%";
   }
 
