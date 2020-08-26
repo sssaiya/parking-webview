@@ -11,6 +11,7 @@
         :root {
             --PI: 3.1415926535;
             --r: 10vw;
+            text-align: center;
         }
 
         #lot_name {
@@ -24,29 +25,30 @@
 
         #total_spots {
             line-height: 0.5;
+            text-emphasis: bold;
         }
 
         #is_historic {
             line-height: 0.1;
+            text-emphasis: bold;
         }
 
-        .row {
+        table {
+            display: table;
             width: 100%;
         }
 
         .column {
+            float: left;
         }
 
         /* Clear floats after the columns */
-        .row:after {
+        #spots_row:after {
             content: "";
-            display: table;
             clear: both;
         }
 
         .progress {
-            display: block;
-            margin: 0 auto;
             overflow: visible;
             transform: rotate(-90deg) rotateX(180deg);
             width: calc(2 * var(--r));
@@ -64,10 +66,6 @@
             cx: var(--r);
             cy: var(--r);
 
-        }
-
-        .progress .bar {
-            stroke: rgb(235, 235, 235);
         }
 
         .progressdiv {
@@ -99,79 +97,42 @@
             margin-top: 4vw;
         }
 
-        #inner_text {
+        .inner_text {
             line-height: 2vw;
             font-size: 4vw;
         }
     </style>
 
-    <!-- <script>
-        // Adds color and stroke to radial progress circle
-        (function () {
-            window.onload = function () {
-                var totalProgress, progress;
-                const circles = document.querySelectorAll('.progress');
-                for (var i = 0; i < circles.length; i++) {
-                    var style = getComputedStyle(circles[i].querySelector('circle'));
-                    //Gets circumference of each circle
-                    totalProgress = parseInt(style.getPropertyValue('stroke-dasharray'));
-                    progress = parseInt(circles[i].parentElement.getAttribute('data-percent'));
-
-                    if (progress == 'NA') {
-                        //If NA means no spots of this type
-                        circles[i].querySelector('.bar').style['stroke-dashoffset'] = 0;
-                    } else {
-                        circles[i].querySelector('.bar').style['stroke-dashoffset'] = totalProgress * progress / 100;
-                        console.log(totalProgress * progress / 100);
-                    }
-                }
-            }
-        })();
-    </script> -->
 </head>
 
 <body>
     <div id="parking_card">
-        <center>
-            <h1 id="lot_name">
-            </h1>
-        </center>
-        <center>
-            <p id="lot_context"></p>
-        </center>
-        <center>
-            <b>
-                <p id="total_spots"></p>
-            </b>
-        </center>
-        <center>
-            <b>
-                <p id="is_historic"></p>
-            </b>
-        </center>
+        <h1 id="lot_name"></h1>
+        <p id="lot_context"></p>
+        <p id="total_spots"></p>
+        <p id="is_historic"></p>
 
-        <center>
-            <table>
-                <tr id="spots_row">
-                    <template>
-                        <div class="column">
-                            <br>
-                            <div class="progressdiv">
-                                <svg class="progress" xmlns="http://www.w3.org/2000/svg">
-                                    <circle></circle>
-                                    <circle class="bar"></circle>
-                                </svg>
-                            </div>
-                            <center>
-                                <span class="spotIdCommonClass">
-                                    <p id="inner_text"></p>
-                                </span>
-                            </center>
+        <table>
+            <tr>
+                <template>
+                    <td class="column">
+                        <br>
+                        <div class="progressdiv">
+                            <svg class="progress" xmlns="http://www.w3.org/2000/svg">
+                                <circle></circle>
+                                <circle class="bar"></circle>
+                            </svg>
                         </div>
-                    </template>
-                </tr>
-            </table>
-        </center>
+                        <center>
+                            <span class="spotIdCommonClass">
+                                <p class="inner_text"></p>
+                            </span>
+                        </center>
+                    </td>
+                </template>
+            </tr>
+        </table>
+
     </div>
 </body>
 

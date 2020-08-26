@@ -59,6 +59,7 @@ const spot_type_data = [
 
 var urlParams = new URLSearchParams(window.location.search);
 var lotID = urlParams.get("lot");
+const selectedSpotsFromQuery = urlParams.get("spots").split(",");
 
 const url =
   "https://4pefyt8qv7.execute-api.us-west-2.amazonaws.com/dev/parking/v1.1/status/" +
@@ -86,9 +87,7 @@ xmlhttp.onreadystatechange = function () {
 
   // Get data (text and color) for spot types from query string
   var userSpotData = {};
-  let spotsStr = urlParams.get("spots");
-  if (spotsStr) {
-    const selectedSpotsFromQuery = spotsStr.split(",");
+  if (selectedSpotsFromQuery) {
     for (var i = 0; i <= 2; i++) {
       const selected = selectedSpotsFromQuery[i];
       if (selected) {
@@ -99,8 +98,6 @@ xmlhttp.onreadystatechange = function () {
       }
     }
   }
-
-  document.documentElement.style.setProperty[("--numSpots", numSpotsSelected)];
 
   document.getElementById("lot_name").innerHTML = lotName;
   document.getElementById("lot_context").innerHTML = lotContext;
@@ -115,10 +112,10 @@ xmlhttp.onreadystatechange = function () {
     document.getElementById("is_historic").innerHTML = "&nbsp;";
   }
 
+  var row = document.getElementsByTagName("tr")[0];
   if (numSpotsSelected <= 0) {
-    document.getElementById("spots_row").innerHTML = "No Spot Types Provided";
+    row.innerHTML = "No Spot Types Provided";
   } else {
-    var row = document.getElementById("spots_row");
     var i = 0;
     var temp = document.getElementsByTagName("template")[0];
     Object.keys(userSpotData).forEach((key) => {
@@ -126,9 +123,6 @@ xmlhttp.onreadystatechange = function () {
 
       var clone = temp.content.cloneNode(true);
       let col = clone.childNodes[1];
-      let width = Math.floor(100 / numSpotsSelected);
-      console.log(width);
-      col.style.setProperty("width", width);
 
       let progressDiv = col.childNodes[3];
       progressDiv.setAttribute("data-percent", spotData["percent"]);
@@ -149,6 +143,11 @@ xmlhttp.onreadystatechange = function () {
 
       row.appendChild(clone);
     });
+    let width = Math.floor(100 / numSpotsSelected) - 1;
+    let cols = document.getElementsByClassName("column");
+    for (var i = 0; i < cols.length; i++) {
+      cols[i].style.setProperty("width", `${width}%`);
+    }
   }
 
   fillProgressBar();
