@@ -100,7 +100,12 @@ xmlhttp.onreadystatechange = function () {
   }
 
   document.getElementById("lot_name").innerHTML = lotName;
-  document.getElementById("lot_context").innerHTML = lotContext;
+
+  if (lotContext == undefined) {
+    document.getElementById("lot_context").innerHTML = "&nbsp;";
+  } else {
+    document.getElementById("lot_context").innerHTML = lotContext;
+  }
   document.getElementById(
     "total_spots"
   ).innerHTML = `~ ${totalSpacesForThisSelection} Spots Available`;
