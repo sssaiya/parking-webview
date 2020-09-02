@@ -59,7 +59,7 @@ const spot_type_data = [
 
 var urlParams = new URLSearchParams(window.location.search);
 var lotID = urlParams.get("lot");
-const selectedSpotsFromQuery = urlParams.get("spots").split(",");
+const spotsQuery = urlParams.get("spots");
 
 const url =
   "https://4pefyt8qv7.execute-api.us-west-2.amazonaws.com/dev/parking/v1.1/status/" +
@@ -87,7 +87,8 @@ xmlhttp.onreadystatechange = function () {
 
   // Get data (text and color) for spot types from query string
   var userSpotData = {};
-  if (selectedSpotsFromQuery) {
+  if (spotsQuery != undefined) {
+    const selectedSpotsFromQuery = spotsQuery.split(",");
     for (var i = 0; i <= 2; i++) {
       const selected = selectedSpotsFromQuery[i];
       if (selected) {
