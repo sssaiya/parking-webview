@@ -138,7 +138,10 @@ xmlhttp.onreadystatechange = function () {
       progressDiv.style.setProperty("color", spotData["percentColor"]);
 
       let progressSVG = progressDiv.childNodes[1];
-      progressSVG.childNodes[3].style.setProperty("stroke", spotData["percentColor"]);
+      progressSVG.childNodes[1].style.setProperty(
+        "stroke",
+        spotData["percentColor"]
+      );
 
       let spotIconSpan = col.childNodes[5].childNodes[1];
       spotIconSpan.style.setProperty("background-color", spotData["color"]);
@@ -177,6 +180,12 @@ function fillProgressBar() {
     }
   }
 }
+
+function preventBehavior(e) {
+  e.preventDefault();
+}
+
+document.addEventListener("touchmove", preventBehavior, { passive: false });
 
 xmlhttp.open("GET", url, true);
 xmlhttp.setRequestHeader("Content-type", contentType);
