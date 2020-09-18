@@ -58,20 +58,41 @@ const spot_type_data = [
 ];
 
 var urlParams = new URLSearchParams(window.location.search);
-var lotID = urlParams.get("lot");
+var lotsQuery = urlParams.get("lot");
 const spotsQuery = urlParams.get("spots");
+const selectedLotsFromQuery = lotsQuery.split(",");
 
-const url =
-  "https://4pefyt8qv7.execute-api.us-west-2.amazonaws.com/dev/parking/v1.1/status/" +
-  lotID;
+const selectedSpotsFromQuery = spotsQuery.split(",");
 
-var xmlhttp = new XMLHttpRequest();
-var contentType = "application/json; charset=utf-8";
+let slider = document.getElementsByClassName("slider")[0];
+let slides = document.getElementsByClassName("slides")[0];
+makeAllCardsFromQuery();
 
-xmlhttp.onreadystatechange = function () {
+async function makeAllCardsFromQuery() {
+  for (var lotIndex = 0; lotIndex < selectedLotsFromQuery.length; lotIndex++) {
+    let cardRef = document.createElement("a");
+    cardRef.setAttribute("href", "#card-" + lotIndex);
+    slider.appendChild(cardRef);
+
+    let cardDiv = document.createElement("div");
+    cardDiv.setAttribute("id", "card-" + lotIndex);
+    console.log("making card for " + selectedLotsFromQuery[lotIndex]);
+    var tempCard = document.getElementsByTagName("template")[0];
+    var cardContext = tempCard.content.cloneNode(true);
+    await makeLotCard(selectedLotsFromQuery[lotIndex], cardContext);
+    cardDiv.appendChild(cardContext);
+    slides.appendChild(cardDiv);
+  }
+}
+
+async function makeLotCard(lotId, cardContext) {
+  const url =
+    "https://4pefyt8qv7.execute-api.us-west-2.amazonaws.com/dev/parking/v1.1/status/" +
+    lotId;
+
   //Needed as readyStateChange event is called multiple times, 4 means its completed and response is downloaded
-  if (this.readyState != 4) return;
-  var lotInfo = JSON.parse(xmlhttp.responseText);
+  let response = await makeRequest(url);
+  var lotInfo = JSON.parse(response);
   const availability = lotInfo["Availability"];
   const lotName = lotInfo["LocationName"];
   const lotContext = lotInfo["LocationContext"];
@@ -87,43 +108,39 @@ xmlhttp.onreadystatechange = function () {
 
   // Get data (text and color) for spot types from query string
   var userSpotData = {};
-  if (spotsQuery != undefined) {
-    const selectedSpotsFromQuery = spotsQuery.split(",");
-    for (var i = 0; i <= 2; i++) {
-      const selected = selectedSpotsFromQuery[i];
-      if (selected) {
-        const thisSpotData = makeSpotData(selected, availability);
-        userSpotData[selected] = thisSpotData;
-        totalSpacesForThisSelection += thisSpotData["total"];
-        numSpotsSelected++;
-      }
+
+  for (var i = 0; i <= 2; i++) {
+    const selected = selectedSpotsFromQuery[i];
+    if (selected) {
+      const thisSpotData = makeSpotData(selected, availability);
+      userSpotData[selected] = thisSpotData;
+      totalSpacesForThisSelection += thisSpotData["total"];
+      numSpotsSelected++;
     }
   }
-
-  document.getElementById("lot_name").innerHTML = lotName;
+  cardContext.querySelector(".lot_name").innerHTML = lotName;
 
   if (lotContext == undefined) {
-    document.getElementById("lot_context").innerHTML = "&nbsp;";
+    cardContext.querySelector(".lot_context").innerHTML = "&nbsp;";
   } else {
-    document.getElementById("lot_context").innerHTML = lotContext;
+    cardContext.querySelector(".lot_context").innerHTML = lotContext;
   }
-  document.getElementById(
-    "total_spots"
+  cardContext.querySelector(
+    ".total_spots"
   ).innerHTML = `~ ${totalSpacesForThisSelection} Spots Available`;
 
   if (isHistoric) {
-    document.getElementById("is_historic").innerHTML =
+    cardContext.querySelector(".is_historic").innerHTML =
       "⚠ No Live Data. Estimated availability shown.";
   } else {
-    document.getElementById("is_historic").innerHTML = "&nbsp;";
+    cardContext.querySelector(".is_historic").innerHTML = "&nbsp;";
   }
-
-  var row = document.getElementsByTagName("tr")[0];
+  var row = cardContext.querySelector(".row");
   if (numSpotsSelected <= 0) {
     row.innerHTML = "No Spot Types Provided";
   } else {
     var i = 0;
-    var temp = document.getElementsByTagName("template")[0];
+    var temp = document.getElementsByTagName("template")[1];
     Object.keys(userSpotData).forEach((key) => {
       let spotData = userSpotData[key];
 
@@ -148,7 +165,10 @@ xmlhttp.onreadystatechange = function () {
 
       let spotIconInnerText = spotIconSpan.childNodes[1];
       spotIconInnerText.style.setProperty("color", spotData["textColor"]); //only need one probably
-      spotIconInnerText.innerHTML = spotData["text"];
+      if (spotData["text"] == "&#x267f;") {
+        //Add icon for accessible spots using fa icon
+        spotIconInnerText.innerHTML = '<i class="fab fa-accessible-icon"></i>';
+      } else spotIconInnerText.innerHTML = spotData["text"];
 
       row.appendChild(clone);
     });
@@ -160,8 +180,33 @@ xmlhttp.onreadystatechange = function () {
   }
 
   fillProgressBar();
-};
+  return cardContext;
+}
 
+function makeRequest(url) {
+  return new Promise(function (resolve, reject) {
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", url);
+    xhr.setRequestHeader("Content-type", "application/json; charset=utf-8");
+    xhr.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        resolve(xhr.response);
+      } else {
+        reject({
+          status: this.status,
+          statusText: xhr.statusText,
+        });
+      }
+    };
+    xhr.onerror = function () {
+      reject({
+        status: this.status,
+        statusText: xhr.statusText,
+      });
+    };
+    xhr.send();
+  });
+}
 function fillProgressBar() {
   var totalProgress, progress;
   const circles = document.querySelectorAll(".progress");
@@ -186,10 +231,6 @@ function preventBehavior(e) {
 }
 
 document.addEventListener("touchmove", preventBehavior, { passive: false });
-
-xmlhttp.open("GET", url, true);
-xmlhttp.setRequestHeader("Content-type", contentType);
-xmlhttp.send();
 
 //Gets color, key
 function getSpotTypeDataFromContext(spotType) {
