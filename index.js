@@ -226,11 +226,11 @@ function fillProgressBar() {
   }
 }
 
-function preventBehavior(e) {
-  e.preventDefault();
-}
+// function preventBehavior(e) {
+//   e.preventDefault();
+// }
 
-document.addEventListener("touchmove", preventBehavior, { passive: false });
+// document.addEventListener("touchmove", preventBehavior, { passive: false });
 
 //Gets color, key
 function getSpotTypeDataFromContext(spotType) {
