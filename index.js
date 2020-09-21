@@ -64,8 +64,8 @@ const selectedLotsFromQuery = lotsQuery.split(",");
 
 const selectedSpotsFromQuery = spotsQuery.split(",");
 
-let slider = document.getElementsByClassName("slider")[0];
-let slides = document.getElementsByClassName("slides")[0];
+let slider = document.getElementById("slider");
+let slides = document.getElementById("slides");
 makeAllCardsFromQuery();
 
 async function makeAllCardsFromQuery() {
@@ -81,8 +81,31 @@ async function makeAllCardsFromQuery() {
     var cardContext = tempCard.content.cloneNode(true);
     await makeLotCard(selectedLotsFromQuery[lotIndex], cardContext);
     cardDiv.appendChild(cardContext);
+    cardDiv.onfocus = onFocus;
     slides.appendChild(cardDiv);
   }
+}
+
+function onFocus() {
+  console.log("Here");
+}
+
+function checkInView(elem, partial) {
+  var container = document.get(".scrollable");
+  var contHeight = container.height();
+  var contTop = container.scrollTop();
+  var contBottom = contTop + contHeight;
+
+  var elemTop = $(elem).offset().top - container.offset().top;
+  var elemBottom = elemTop + $(elem).height();
+
+  var isTotal = elemTop >= 0 && elemBottom <= contHeight;
+  var isPart =
+    ((elemTop < 0 && elemBottom > 0) ||
+      (elemTop > 0 && elemTop <= container.height())) &&
+    partial;
+
+  return isTotal || isPart;
 }
 
 async function makeLotCard(lotId, cardContext) {

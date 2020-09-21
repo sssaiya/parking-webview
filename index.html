@@ -20,40 +20,43 @@
             overflow-x: hidden;
         }
 
-        #lot_name {
+        .lot_name {
             font-size: 6vw;
-            line-height: 0.5;
         }
 
-        #lot_context {
+        .lot_context {
             font-size: 4vw;
             opacity: 0.5;
-            line-height: 0.5;
         }
 
-        #total_spots {
+        .total_spots {
             font-size: 4vw;
             line-height: 0.5;
             text-emphasis: bold;
         }
 
-        #is_historic {
+        .is_historic {
             font-size: 4vw;
             line-height: 0.1;
             text-emphasis: bold;
         }
 
         table {
-            display: table;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .row {
             width: 100%;
         }
 
         .column {
+            width: auto;
             float: left;
         }
 
         /* Clear floats after the columns */
-        #spots_row:after {
+        .spots_row:after {
             content: "";
             clear: both;
         }
@@ -104,26 +107,21 @@
             width: var(--r);
             border-radius: 50%;
             display: inline-block;
-            margin-top: 1vw;
+            /* margin-top: 1vw; */
         }
 
         .inner_text {
             /* line-height: 2vw; */
-            font-size: 2vw;
+            font-size: 4vw;
             text-align: center;
         }
 
-        /* * {
-            box-sizing: border-box;
-        } */
-
-        .slider {
+        #slider {
             width: 100%;
-            text-align: center;
             /* overflow: hidden; */
         }
 
-        .slides {
+        #slides {
             display: flex;
             overflow-x: auto;
             scroll-snap-type: x mandatory;
@@ -131,9 +129,8 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        .slides::-webkit-scrollbar {
+        #slides::-webkit-scrollbar {
             width: 100%;
-            height: 10px;
         }
 
         /* .slides::-webkit-scrollbar-thumb {
@@ -141,28 +138,44 @@
             border-radius: 10px;
         } */
 
-        .slides::-webkit-scrollbar-track {
+        #slides::-webkit-scrollbar-track {
             background: transparent;
         }
 
-        .slides>div {
+        #slides>div {
             scroll-snap-align: start;
             flex-shrink: 0;
             width: 100vw;
-            height: 100vh;
-            margin-right: 50px;
-            border-radius: 10px;
+            height: 80vh;
+            /* border-radius: 10px; */
             transform-origin: center center;
             transform: scale(1);
-            transition: transform 0.5s;
+            transition: transform 1s;
             position: relative;
-            display: flex;
+            display: block;
             justify-content: center;
             align-items: center;
             /* font-size: 100px; */
         }
 
-        .slider>a {
+        #slides>div:focus {
+            scroll-snap-align: start;
+            flex-shrink: 0;
+            width: 100vw;
+            height: 80vh;
+            /* border-radius: 10px; */
+            transform-origin: center center;
+            transform: scale(1);
+            transition: transform 1s;
+            position: relative;
+            display: block;
+            justify-content: center;
+            align-items: center;
+            /* font-size: 100px; */
+            background-color: #000;
+        }
+
+        #slider>a {
             display: inline-flex;
             width: 1.5rem;
             height: 1.5rem;
@@ -171,34 +184,24 @@
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            margin: 0 0 0.5rem 0;
             position: relative;
         }
 
-        .slider>a:active {
-            top: 1px;
+        #slider>a:focus {
+            background: #000;
         }
 
-        .slider>a:focus {
-            background: #000;
+        .parking_card {
+            width: 100vw;
         }
     </style>
 
 </head>
 
 <body>
-    <div class="slider">
-
-        <!-- <a href="#slide-1">1</a>
-        <a href="#slide-2">2</a>
-        <a href="#slide-3">3</a>
-        <a href="#slide-4">4</a>
-        <a href="#slide-5">5</a> -->
-
-        <div class="slides">
-
+    <div id="slider">
+        <div id="slides">
         </div>
-
     </div>
 
     <template>
