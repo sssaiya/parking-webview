@@ -147,9 +147,21 @@ xmlhttp.onreadystatechange = function () {
       spotIconSpan.style.setProperty("background-color", spotData["color"]);
 
       let spotIconInnerText = spotIconSpan.childNodes[1];
-      spotIconInnerText.style.setProperty("color", spotData["textColor"]); //only need one probably
-      spotIconInnerText.innerHTML = spotData["text"];
+      spotIconInnerText.style.setProperty("color", spotData["textColor"]);
 
+      var icon;
+      if (spotData["text"] == "&#x267f;") {
+        icon = document.createElement("i");
+        icon.className = "material-icons";
+        icon.innerText = "accessible";
+        icon.style.setProperty("color", spotData["textColor"]);
+        spotIconInnerText.parentNode.removeChild(spotIconInnerText);
+        spotIconSpan.appendChild(icon);
+      } else {
+        spotIconInnerText.style.setProperty("color", spotData["textColor"]);
+        icon = spotData["text"];
+        spotIconInnerText.innerHTML = icon;
+      }
       row.appendChild(clone);
     });
     let width = Math.floor(100 / numSpotsSelected) - 1;
